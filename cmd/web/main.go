@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/edmarqueslima/memorygame/internal/application"
 	"github.com/edmarqueslima/memorygame/internal/infrastructure"
@@ -10,6 +12,11 @@ import (
 )
 
 func main() {
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
 	// 1. Instanciar Infraestrutura (Repositório em Memória)
 	repo := infrastructure.NewMemoryRepo()
 
@@ -20,8 +27,8 @@ func main() {
 	handler := apihttp.NewGameHandler(service)
 	router := apihttp.NewRouter(handler)
 
-	log.Println("Servidor rodando em http://localhost:8080")
-	if err := http.ListenAndServe(":8080", router); err != nil {
+	log.Printf("Servidor rodando em http://localhost:%s", port)
+	if err := http.ListenAndServe(fmt.Sprintf(":%s", port), router); err != nil {
 		log.Fatal(err)
 	}
 }
