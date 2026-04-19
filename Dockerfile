@@ -10,5 +10,7 @@ RUN go build -v -o /run-app ./cmd/web
 
 FROM debian:bookworm
 
+WORKDIR /usr/src/app
 COPY --from=builder /run-app /usr/local/bin/
+COPY --from=builder /usr/src/app/web ./web
 CMD ["run-app"]
