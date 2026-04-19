@@ -2,7 +2,10 @@ package http
 
 import (
 	"html/template"
+	"io/fs"
 	"net/http"
+
+	"github.com/edmarqueslima/memorygame/web"
 )
 
 func NewRouter(gameHandler *GameHandler) *http.ServeMux {
@@ -31,8 +34,11 @@ func NewRouter(gameHandler *GameHandler) *http.ServeMux {
 	})
 
 	// Static files
-	fs := http.FileServer(http.Dir("./web/static"))
-	mux.Handle("/static/", http.StripPrefix("/static/", fs))
+	staticFS, err := fs.Sub(web.FS, "static")
+	if err != nil {
+		panic(err)
+	}
+	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.FS(staticFS))))
 
 	// Frontend page
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -40,7 +46,7 @@ func NewRouter(gameHandler *GameHandler) *http.ServeMux {
 			http.NotFound(w, r)
 			return
 		}
-		tmpl, err := template.ParseFiles("./web/templates/index.html")
+		tmpl, err := template.ParseFS(web.FS, "templates/index.html")
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
